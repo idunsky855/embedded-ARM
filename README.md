@@ -6,6 +6,7 @@
 </p>
 </br>
 ## States:
+
 <ol>
   <li> Regular traffic light simulation using LED lights red - red, blue - orange, green - green.</li>
   <li> Formula 1 like traffic light - left light on, left and middle lights on, all three lights on, lights off - go!</li>
@@ -13,5 +14,7 @@
   <li> Crosswlak light - Stop - red, Walk - green.</li>
 </ol>
 </br>
+
 ## Example
+
 [![YouTube video example](https://img.youtube.com/vi/Dkr52m_smfs/0.jpg)](https://www.youtube.com/watch?v=Dkr52m_smfs)
