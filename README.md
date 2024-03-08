@@ -7,10 +7,10 @@
 </br>
 ## States:
 <ol>
-  <li>1. Regular traffic light simulation using LED lights red - red, blue - orange, green - green.</li>
-  <li>2. Formula 1 like traffic light - left light on, left and middle lights on, all three lights on, lights off - go!</li>
-  <li>3. Binary counter - using 3 lights counting 0-7.</li>
-  <li>4. Crosswlak light - Stop - red, Walk - green.</li>
+  <li> Regular traffic light simulation using LED lights red - red, blue - orange, green - green.</li>
+  <li> Formula 1 like traffic light - left light on, left and middle lights on, all three lights on, lights off - go!</li>
+  <li> Binary counter - using 3 lights counting 0-7.</li>
+  <li> Crosswlak light - Stop - red, Walk - green.</li>
 </ol>
 </br>
 ## Example
