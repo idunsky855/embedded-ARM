@@ -37,6 +37,10 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+#define RED_LED GPIOA, GPIO_PIN_9
+#define BLUE_LED GPIOB, GPIO_PIN_7
+#define GREEN_LED GPIOC, GPIO_PIN_7
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -71,10 +75,6 @@ static void MX_TIM2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-#define RED_LED GPIOA, GPIO_PIN_9
-#define BLUE_LED GPIOB, GPIO_PIN_7
-#define GREEN_LED GPIOC, GPIO_PIN_7
-
 /* USER CODE END 0 */
 
 /**
@@ -82,6 +82,11 @@ static void MX_TIM2_Init(void);
  * @retval int
  */
 
+/*@brief The PC13 - User Button Interrupt handler
+ * @retval None
+ *
+ *
+ * */
 void EXTI13_IRQHandler(void) {
 	/* USER CODE BEGIN EXTI13_IRQn 0 */
 
@@ -89,13 +94,13 @@ void EXTI13_IRQHandler(void) {
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
 	/* USER CODE BEGIN EXTI13_IRQn 1 */
 
-	funcState++;
-	funcState = funcState % 4;
+	funcState++; // determines the program's state
+	funcState = funcState % 4; // 0 <= funcState < 4
 	time = 0;
 	count = 0;
-	HAL_GPIO_WritePin( RED_LED, GPIO_PIN_RESET); // red LED
-	HAL_GPIO_WritePin( BLUE_LED, GPIO_PIN_RESET); // blue LED
-	HAL_GPIO_WritePin( GREEN_LED, GPIO_PIN_RESET); // green LED
+	HAL_GPIO_WritePin( RED_LED, GPIO_PIN_RESET); // turn off red LED
+	HAL_GPIO_WritePin( BLUE_LED, GPIO_PIN_RESET); // turn off blue LED
+	HAL_GPIO_WritePin( GREEN_LED, GPIO_PIN_RESET); // turn off green LED
 
 	/* USER CODE END EXTI13_IRQn 1 */
 }
@@ -569,88 +574,113 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+
+/*
+ * @brief The Timer interrupt handler
+ *
+ * */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	if (funcState == 0) {
-		time++;
+	time++;
+	if (funcState == 0) { // state - Regular traffic light
+
 		if (time == 1) {
-			//red Light
-			HAL_GPIO_TogglePin(RED_LED);  // red LED
+			//red Light only
+			HAL_GPIO_TogglePin(RED_LED);  // Turn on red LED
+
 		} else if (time == 5) {
-			// red and blue
-			HAL_GPIO_TogglePin(BLUE_LED); // blue LED
+			// red and blue (supposed to be orange) light
+			HAL_GPIO_TogglePin(BLUE_LED); // Turn on blue LED
+
 		} else if (time == 10) {
-			// green
-			HAL_GPIO_TogglePin(RED_LED); // red LED
-			HAL_GPIO_TogglePin(BLUE_LED); // blue LED
-			HAL_GPIO_TogglePin(GREEN_LED); // green LED
+			// green light only
+			HAL_GPIO_TogglePin(RED_LED); // Turn off red LED
+			HAL_GPIO_TogglePin(BLUE_LED); // Turn off blue LED
+			HAL_GPIO_TogglePin(GREEN_LED); // Turn off green LED
+
 		} else if (time == 15) {
-			// blue light
-			HAL_GPIO_TogglePin(BLUE_LED); // blue LED
-			HAL_GPIO_TogglePin(GREEN_LED); // green LED
+			// blue (supposed to be orange) light
+			HAL_GPIO_TogglePin(GREEN_LED); // Turn off green LED
+			HAL_GPIO_TogglePin(BLUE_LED); // Turn on blue LED
+
 		} else if (time == 20) {
 			//turn off blue light
-			HAL_GPIO_TogglePin(BLUE_LED); // blue LED
-			time = 0; // cycle through
+			HAL_GPIO_TogglePin(BLUE_LED); // Turn off blue LED
+			time = 0; // end cycle
 		}
 
-	} else if (funcState == 1) {
-		time++;
+	} else if (funcState == 1) { // state - F1 traffic light
+
 		if (time == 5) {
+			// left light on
 			HAL_GPIO_TogglePin(RED_LED); // red LED
+
 		} else if (time == 10) {
+			//left & middle lights on
 			HAL_GPIO_TogglePin(BLUE_LED); // blue LED
+
 		} else if (time == 15) {
+			// all three lights on
 			HAL_GPIO_TogglePin(GREEN_LED); // green LED
+
 		} else if (time == 20) {
+			// turn of lights
 			HAL_GPIO_TogglePin(RED_LED); // red LED
 			HAL_GPIO_TogglePin(BLUE_LED); // blue LED
 			HAL_GPIO_TogglePin(GREEN_LED); // green LED
-			time = 0;
+			time = 0; // end cycle
 		}
 
-	} else if (funcState == 2) {
+	} else if (funcState == 2) {	// state - binary counter using lights
 		int red, blue, green;
-		red = ((count) & 0x4) >> 2;
-		blue = ((count) & 0x2) >> 1;
-		green = ((count) & 0x1);
+
+		red = ((count) & 0x4) >> 2; // get the 3rd bit out of count - left light
+		blue = ((count) & 0x2) >> 1; // get the 2nd bit out of count - middle light
+		green = ((count) & 0x1); // get the 1st bit out of count - right light
 
 		if (red) {
+			// turn on red light
 			HAL_GPIO_WritePin(RED_LED, GPIO_PIN_SET);
+
 		} else {
+			// turn off red light
 			HAL_GPIO_WritePin(RED_LED, GPIO_PIN_RESET);
 		}
 
 		if (blue) {
+			// turn on blue light
 			HAL_GPIO_WritePin(BLUE_LED, GPIO_PIN_SET);
+
 		} else {
+			// turn off blue light
 			HAL_GPIO_WritePin(BLUE_LED, GPIO_PIN_RESET);
 		}
 
 		if (green) {
+			// turn on green light
 			HAL_GPIO_WritePin(GREEN_LED, GPIO_PIN_SET);
+
 		} else {
+			// turn off green light
 			HAL_GPIO_WritePin(GREEN_LED, GPIO_PIN_RESET);
 		}
+
 		count++;
-		if(count == 8) count = 0;
+		if(count == 8) count = 0; // cycle through 0-7 ( only three LED lights )
 	}
 
-	else {
-		time++;
-		if (time == 1) {
-			//red Light
-			HAL_GPIO_TogglePin(RED_LED);  // red LED
-		} else if (time == 10) {
-			// green
-			HAL_GPIO_TogglePin(RED_LED); // red LED
-			HAL_GPIO_TogglePin(GREEN_LED); // green LED
-		} else if (time == 20) {
-			//turn off blue light
-			HAL_GPIO_TogglePin(GREEN_LED);
-			time = 0; // cycle through
+	else { // state - crosswalk light
+
+		if (time == 1) { // Stop
+			HAL_GPIO_TogglePin(RED_LED);  // turn on red LED
+
+		} else if (time == 10) { // Walk
+			HAL_GPIO_TogglePin(RED_LED); // turn off red LED
+			HAL_GPIO_TogglePin(GREEN_LED); // turn on green LED
+
+		} else if (time == 20) { // turn
+			HAL_GPIO_TogglePin(GREEN_LED); // turn off green LED
+			time = 0; // cycle through light states
 		}
-
-
 	}
 
 }
